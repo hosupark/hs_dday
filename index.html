@@ -1,131 +1,471 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>D-Day 계산기 (자동 갱신)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>예쁜 D-Day 카운트다운</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 40px;
-      background: #f8f9fa;
+    :root{
+      --bg1: #0f172a;
+      --bg2: #0b1220;
+      --card: rgba(255,255,255,0.05);
+      --accent: #7c5cff;
+      --accent-2: #00d4ff;
+      --glass: rgba(255,255,255,0.06);
+      --muted: rgba(255,255,255,0.7);
+      --success: #22c55e;
+      --danger: #ff6b6b;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    h1 {
-      color: #333;
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+      color: #e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
-    .container {
-      margin-top: 20px;
-      display: inline-block;
-      padding: 20px;
-      border-radius: 12px;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+    .wrap{
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      box-sizing:border-box;
     }
-    .row {
-      margin: 15px 0;
+
+    .card{
+      width:100%;
+      max-width:920px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:14px;
+      padding:22px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.04);
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:18px;
     }
-    input, select {
-      padding: 8px;
-      font-size: 16px;
-      margin: 5px;
+
+    /* left column */
+    .main{
+      padding:12px;
     }
-    #result {
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #0066cc;
+    h1{
+      margin:0 0 6px 0;
+      font-size:20px;
+      letter-spacing: -0.2px;
+    }
+    p.lead{
+      margin:0 0 18px 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .now-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .now-bubble{
+      padding:10px 12px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius:10px;
+      font-weight:600;
+      font-size:14px;
+      box-shadow: 0 2px 8px rgba(2,6,23,0.6);
+    }
+
+    .form{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    input[type="datetime-local"]{
+      padding:10px 12px;
+      border-radius:10px;
+      background:var(--glass);
+      border:1px solid rgba(255,255,255,0.04);
+      color:inherit;
+      font-size:14px;
+      outline:none;
+    }
+    select{
+      padding:10px 12px;
+      border-radius:10px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.04);
+      color:inherit;
+      font-size:14px;
+      outline:none;
+    }
+    .controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-left:auto;
+    }
+    .btn{
+      padding:10px 12px;
+      border-radius:10px;
+      border:none;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:#07112a;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(124,92,255,0.18);
+      transition:transform .12s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .muted {
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .count{
+      margin-top:18px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+    .big{
+      font-size:36px;
+      font-weight:800;
+      letter-spacing:-1px;
+      color: #fff;
+    }
+    .unit{
+      font-size:16px;
+      color:var(--muted);
+    }
+
+    .breakdown{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .pill{
+      background: rgba(255,255,255,0.03);
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:600;
+      font-size:14px;
+      min-width:84px;
+      text-align:center;
+    }
+
+    /* right column */
+    .side{
+      padding:12px;
+      border-left:1px solid rgba(255,255,255,0.02);
+    }
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .progress-wrap{
+      background: rgba(255,255,255,0.03);
+      border-radius:10px;
+      padding:8px;
+    }
+    .progress{
+      height:14px;
+      background: rgba(255,255,255,0.03);
+      border-radius:8px;
+      overflow:hidden;
+    }
+    .bar{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg,var(--accent),var(--accent-2));
+      transition: width 0.6s cubic-bezier(.2,.9,.2,1);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35) inset;
+    }
+    .meta{
+      display:flex;
+      justify-content:space-between;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:8px;
+    }
+
+    .notice{
+      font-size:13px;
+      color:var(--muted);
+      padding:8px;
+      border-radius:8px;
+      background: rgba(0,0,0,0.15);
+    }
+
+    /* responsive */
+    @media (max-width:880px){
+      .card{ grid-template-columns: 1fr; padding:18px; }
+      .side{ border-left:none; border-top:1px solid rgba(255,255,255,0.02); margin-top:10px; }
     }
   </style>
 </head>
 <body>
-  <h1>D-Day 계산기</h1>
-  <div class="container">
-    <div class="row">
-      <label>현재 날짜/시간: </label>
-      <span id="currentDate"></span>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="D-Day 계산기">
+      <div class="main">
+        <h1>D-Day 카운트다운</h1>
+        <p class="lead">목표까지 남은 시간을 실시간으로 보여줍니다. 단위 선택 또는 전체 분해 보기로 확인하세요.</p>
+
+        <div class="now-row" aria-live="polite">
+          <div class="now-bubble" id="nowDisplay">--</div>
+          <div class="muted">현재 시각 (로컬)</div>
+        </div>
+
+        <div class="form" style="margin-bottom:12px;">
+          <input id="targetInput" type="datetime-local" aria-label="목표 날짜 및 시간">
+          
+          <select id="unitSelect" aria-label="단위 선택">
+            <option value="auto">자동(적절한 단위)</option>
+            <option value="days">일</option>
+            <option value="hours">시간</option>
+            <option value="minutes">분</option>
+            <option value="seconds" selected>초</option>
+          </select>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-left:6px;">
+            <input id="fullBreak" type="checkbox" aria-label="전체 분해 보기">
+            <span class="muted" style="font-size:13px;">전체 분해 보기</span>
+          </label>
+
+          <div class="controls">
+            <button id="setNowBtn" class="btn" title="목표 시간을 지금으로 초기화">지금으로</button>
+            <button id="resetBtn" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);box-shadow:none;">초기화</button>
+          </div>
+        </div>
+
+        <div class="count" aria-live="polite">
+          <div>
+            <div class="big" id="mainValue">--</div>
+            <div class="unit" id="mainUnit">--</div>
+          </div>
+
+          <div class="breakdown" id="breakdown" style="display:none;">
+            <div class="pill" id="bdDays">--일</div>
+            <div class="pill" id="bdHours">--시간</div>
+            <div class="pill" id="bdMinutes">--분</div>
+            <div class="pill" id="bdSeconds">--초</div>
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="side" aria-hidden="false">
+        <div class="panel">
+          <div class="label">진행률 (목표 설정 시점 → 목표까지)</div>
+          <div class="progress-wrap">
+            <div class="progress" aria-hidden="true"><div class="bar" id="progressBar" style="width:0%"></div></div>
+            <div class="meta">
+              <div id="progressTxt">진행: 0%</div>
+              <div id="timeLeftSmall" class="muted">남음: --</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="label">상태</div>
+          <div class="notice" id="statusMsg">목표 시간을 설정하세요.</div>
+        </div>
+
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">
+          이 앱은 단순 클라이언트 사이드로 동작합니다. GitHub Pages에 업로드하여 블로그에 iframe으로 삽입 가능합니다.
+        </div>
+      </aside>
     </div>
-    <div class="row">
-      <label for="targetDate">목표 날짜/시간: </label>
-      <input type="datetime-local" id="targetDate">
-    </div>
-    <div class="row">
-      <label for="unitSelect">단위: </label>
-      <select id="unitSelect">
-        <option value="days">일</option>
-        <option value="hours">시간</option>
-        <option value="minutes">분</option>
-        <option value="seconds" selected>초</option>
-      </select>
-    </div>
-    <div id="result"></div>
   </div>
 
   <script>
-    // 현재 날짜/시간 표시 & 목표 기본값 세팅
-    function initDates() {
-      const now = new Date();
-      document.getElementById("currentDate").textContent =
-        now.toLocaleString();
+    // 요소 참조
+    const nowDisplay = document.getElementById('nowDisplay');
+    const targetInput = document.getElementById('targetInput');
+    const unitSelect = document.getElementById('unitSelect');
+    const mainValue = document.getElementById('mainValue');
+    const mainUnit = document.getElementById('mainUnit');
+    const bdDays = document.getElementById('bdDays');
+    const bdHours = document.getElementById('bdHours');
+    const bdMinutes = document.getElementById('bdMinutes');
+    const bdSeconds = document.getElementById('bdSeconds');
+    const breakdown = document.getElementById('breakdown');
+    const fullBreak = document.getElementById('fullBreak');
+    const progressBar = document.getElementById('progressBar');
+    const progressTxt = document.getElementById('progressTxt');
+    const timeLeftSmall = document.getElementById('timeLeftSmall');
+    const statusMsg = document.getElementById('statusMsg');
+    const setNowBtn = document.getElementById('setNowBtn');
+    const resetBtn = document.getElementById('resetBtn');
 
-      // 목표 날짜 기본값 (현재 시간)
-      const localISOTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
-        .toISOString().slice(0,16);
-      document.getElementById("targetDate").value = localISOTime;
+    // 상태: 목표 설정 시점(시작), 초기 duration
+    let startTime = null;
+    let initialDurationMs = null;
+
+    // 날짜 기본값(로컬) 세팅
+    function toLocalDatetimeInputValue(date){
+      // datetime-local expects local time in format yyyy-MM-ddTHH:mm
+      const tzOffsetMs = date.getTimezoneOffset() * 60000;
+      const localISO = new Date(date.getTime() - tzOffsetMs).toISOString().slice(0,16);
+      return localISO;
     }
 
-    function updateCurrentDate() {
+    function init(){
       const now = new Date();
-      document.getElementById("currentDate").textContent = now.toLocaleString();
+      nowDisplay.textContent = now.toLocaleString();
+      // 기본: 목표를 현재 시각으로 설정
+      targetInput.value = toLocalDatetimeInputValue(now);
+      setStartForTarget(new Date(targetInput.value));
+      updateAll(); // 한 번 갱신
     }
 
-    function calculate() {
+    // 목표 설정 시 시작 시각/초기 지속시간 기록
+    function setStartForTarget(targetDate){
+      startTime = new Date(); // 설정 시점
+      initialDurationMs = targetDate - startTime;
+      if (initialDurationMs < 0) initialDurationMs = 0;
+    }
+
+    // 남은 시간 계산 (object)
+    function calcRemaining(target, now){
+      let diff = target - now;
+      if (isNaN(diff)) diff = 0;
+      const sign = diff < 0 ? -1 : 1;
+      const abs = Math.abs(diff);
+
+      const days = Math.floor(abs / (1000*60*60*24));
+      const hours = Math.floor((abs % (1000*60*60*24)) / (1000*60*60));
+      const minutes = Math.floor((abs % (1000*60*60)) / (1000*60));
+      const seconds = Math.floor((abs % (1000*60)) / 1000);
+      const totalSeconds = Math.floor(abs/1000);
+      const totalMinutes = abs / (1000*60);
+      const totalHours = abs / (1000*60*60);
+      const totalDays = abs / (1000*60*60*24);
+
+      return {
+        sign, abs, days, hours, minutes, seconds,
+        totalSeconds, totalMinutes, totalHours, totalDays
+      };
+    }
+
+    // 메인 값 포매팅
+    function formatMainValue(calc){
+      const unit = unitSelect.value;
+      if (unit === 'auto'){
+        // 자동 단위: 큰 값은 일, 그 다음 시간, 그 다음 분, 아니면 초
+        if (calc.totalDays >= 1) return {v: calc.totalDays.toFixed(2), u: '일'};
+        if (calc.totalHours >= 1) return {v: calc.totalHours.toFixed(2), u: '시간'};
+        if (calc.totalMinutes >= 1) return {v: calc.totalMinutes.toFixed(2), u: '분'};
+        return {v: calc.totalSeconds.toString(), u: '초'};
+      }
+      switch(unit){
+        case 'days': return {v: calc.totalDays.toFixed(2), u: '일'};
+        case 'hours': return {v: calc.totalHours.toFixed(2), u: '시간'};
+        case 'minutes': return {v: calc.totalMinutes.toFixed(2), u: '분'};
+        case 'seconds': return {v: calc.totalSeconds.toString(), u: '초'};
+        default: return {v: calc.totalSeconds.toString(), u:'초'};
+      }
+    }
+
+    // 진행률 계산: startTime -> target
+    function computeProgress(target, now){
+      if (!startTime || initialDurationMs === null || initialDurationMs <= 0) return 0;
+      const elapsed = now - startTime;
+      const pct = Math.min(Math.max((elapsed / initialDurationMs) * 100, 0), 100);
+      return Math.round(pct);
+    }
+
+    // 모든 내용 갱신
+    function updateAll(){
       const now = new Date();
-      const targetInput = document.getElementById("targetDate").value;
-      if (!targetInput) {
-        document.getElementById("result").textContent = "목표 날짜/시간을 지정해주세요!";
+      nowDisplay.textContent = now.toLocaleString();
+
+      const targetVal = targetInput.value;
+      if (!targetVal){
+        statusMsg.textContent = '목표 시간이 비어있습니다. 입력해주세요.';
+        mainValue.textContent = '--';
+        mainUnit.textContent = '--';
+        breakdown.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressTxt.textContent = '진행: 0%';
+        timeLeftSmall.textContent = '남음: --';
         return;
       }
-      const target = new Date(targetInput);
-      const diffMs = target - now;
 
-      if (diffMs < 0) {
-        document.getElementById("result").textContent = "목표 시간이 이미 지났습니다!";
-        return;
+      const targetDate = new Date(targetVal);
+      const calc = calcRemaining(targetDate, now);
+
+      if (calc.sign < 0){
+        statusMsg.textContent = '목표 시간이 이미 지났습니다.';
+        statusMsg.style.color = 'var(--danger)';
+      } else {
+        statusMsg.textContent = '목표가 설정되어 있습니다.';
+        statusMsg.style.color = '';
       }
 
-      const unit = document.getElementById("unitSelect").value;
-      let value = 0;
-      switch (unit) {
-        case "days":
-          value = (diffMs / (1000 * 60 * 60 * 24)).toFixed(2);
-          break;
-        case "hours":
-          value = (diffMs / (1000 * 60 * 60)).toFixed(2);
-          break;
-        case "minutes":
-          value = (diffMs / (1000 * 60)).toFixed(2);
-          break;
-        case "seconds":
-          value = (diffMs / 1000).toFixed(0);
-          break;
+      // 메인 표시
+      const main = formatMainValue(calc);
+      mainValue.textContent = main.v;
+      mainUnit.textContent = main.u + (calc.sign < 0 ? ' 전' : ' 남음');
+
+      // breakdown
+      if (fullBreak.checked){
+        breakdown.style.display = 'flex';
+        bdDays.textContent = `${calc.days}일`;
+        bdHours.textContent = `${calc.hours}시간`;
+        bdMinutes.textContent = `${calc.minutes}분`;
+        bdSeconds.textContent = `${calc.seconds}초`;
+      } else {
+        breakdown.style.display = 'none';
       }
 
-      document.getElementById("result").textContent =
-        `남은 시간: ${value} ${document.querySelector("#unitSelect option:checked").textContent}`;
+      // progress
+      const pct = computeProgress(targetDate, now);
+      progressBar.style.width = pct + '%';
+      progressTxt.textContent = `진행: ${pct}%`;
+
+      // small text left
+      const leftStr = `${calc.days}d ${calc.hours}h ${calc.minutes}m ${calc.seconds}s`;
+      timeLeftSmall.textContent = calc.sign < 0 ? '지남: ' + leftStr : '남음: ' + leftStr;
     }
 
-    // 페이지 로드 시 초기화
-    initDates();
+    // 이벤트 바인딩
+    targetInput.addEventListener('change', () => {
+      // 목표를 바꿀 때, 시작을 현재로 재설정하여 진행률 계산을 의미있게 만듬
+      const t = new Date(targetInput.value);
+      setStartForTarget(t);
+      updateAll();
+    });
+    unitSelect.addEventListener('change', updateAll);
+    fullBreak.addEventListener('change', updateAll);
+    setNowBtn.addEventListener('click', () => {
+      const now = new Date();
+      targetInput.value = toLocalDatetimeInputValue(now);
+      setStartForTarget(new Date(targetInput.value));
+      updateAll();
+    });
+    resetBtn.addEventListener('click', () => {
+      // 기본 초기화 (목표 = 현재)
+      init();
+    });
 
-    // 1초마다 현재 시간 & 남은 시간 갱신
-    setInterval(() => {
-      updateCurrentDate();
-      calculate();
-    }, 1000);
-
-    // 목표 날짜나 단위 변경 시 즉시 갱신
-    document.getElementById("targetDate").addEventListener("change", calculate);
-    document.getElementById("unitSelect").addEventListener("change", calculate);
+    // 1초마다 갱신
+    init();
+    setInterval(updateAll, 1000);
   </script>
 </body>
 </html>
