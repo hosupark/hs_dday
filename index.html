@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>D-Day 계산기 (자동 갱신)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 40px;
+      background: #f8f9fa;
+    }
+    h1 {
+      color: #333;
+    }
+    .container {
+      margin-top: 20px;
+      display: inline-block;
+      padding: 20px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .row {
+      margin: 15px 0;
+    }
+    input, select {
+      padding: 8px;
+      font-size: 16px;
+      margin: 5px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #0066cc;
+    }
+  </style>
+</head>
+<body>
+  <h1>D-Day 계산기</h1>
+  <div class="container">
+    <div class="row">
+      <label>현재 날짜/시간: </label>
+      <span id="currentDate"></span>
+    </div>
+    <div class="row">
+      <label for="targetDate">목표 날짜/시간: </label>
+      <input type="datetime-local" id="targetDate">
+    </div>
+    <div class="row">
+      <label for="unitSelect">단위: </label>
+      <select id="unitSelect">
+        <option value="days">일</option>
+        <option value="hours">시간</option>
+        <option value="minutes">분</option>
+        <option value="seconds" selected>초</option>
+      </select>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // 현재 날짜/시간 표시 & 목표 기본값 세팅
+    function initDates() {
+      const now = new Date();
+      document.getElementById("currentDate").textContent =
+        now.toLocaleString();
+
+      // 목표 날짜 기본값 (현재 시간)
+      const localISOTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
+        .toISOString().slice(0,16);
+      document.getElementById("targetDate").value = localISOTime;
+    }
+
+    function updateCurrentDate() {
+      const now = new Date();
+      document.getElementById("currentDate").textContent = now.toLocaleString();
+    }
+
+    function calculate() {
+      const now = new Date();
+      const targetInput = document.getElementById("targetDate").value;
+      if (!targetInput) {
+        document.getElementById("result").textContent = "목표 날짜/시간을 지정해주세요!";
+        return;
+      }
+      const target = new Date(targetInput);
+      const diffMs = target - now;
+
+      if (diffMs < 0) {
+        document.getElementById("result").textContent = "목표 시간이 이미 지났습니다!";
+        return;
+      }
+
+      const unit = document.getElementById("unitSelect").value;
+      let value = 0;
+      switch (unit) {
+        case "days":
+          value = (diffMs / (1000 * 60 * 60 * 24)).toFixed(2);
+          break;
+        case "hours":
+          value = (diffMs / (1000 * 60 * 60)).toFixed(2);
+          break;
+        case "minutes":
+          value = (diffMs / (1000 * 60)).toFixed(2);
+          break;
+        case "seconds":
+          value = (diffMs / 1000).toFixed(0);
+          break;
+      }
+
+      document.getElementById("result").textContent =
+        `남은 시간: ${value} ${document.querySelector("#unitSelect option:checked").textContent}`;
+    }
+
+    // 페이지 로드 시 초기화
+    initDates();
+
+    // 1초마다 현재 시간 & 남은 시간 갱신
+    setInterval(() => {
+      updateCurrentDate();
+      calculate();
+    }, 1000);
+
+    // 목표 날짜나 단위 변경 시 즉시 갱신
+    document.getElementById("targetDate").addEventListener("change", calculate);
+    document.getElementById("unitSelect").addEventListener("change", calculate);
+  </script>
+</body>
+</html>
